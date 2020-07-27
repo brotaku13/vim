@@ -1,4 +1,4 @@
-#! /bin/bash 
+#!/bin/bash 
 
 # use these environment variables
 user_home_dir='~'
@@ -9,12 +9,14 @@ root_access=false
 platform=''
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	platform="linux"
-elif [["$OSTYPE" == "darwin"* ]]; then
+elif [[ "$OSTYPE" == "darwin"* ]]; then
 	platform="mac"
 else
 	echo "This script does not support this OS"
 	exit 1
 fi
+
+echo "detected platform = $platform"
 
 # check for root access
 echo "Checking for root access"
@@ -25,6 +27,8 @@ else
 	echo "root access detected"
 	root_access=true
 fi
+
+echo "detected root access = $root_access"
 
 function check_install(){
 	# checking installation
@@ -62,11 +66,12 @@ function install_neovim() {
 	fi
 
 	echo "Installing Neovim"
-	
-	if [ $platform == "mac" ]; then 
+	echo "$platform" "$root_access"	
+	if [[ "$platform" == "mac" ]]; then 
 		brew install veovim
 
-	elif [ $platform == "linux" && ! $root_access ]; then
+	elif [[ "$platform" = "linux" ]] && [[ ! $root_access ]]; then
+		
 		# user does not have root access, install via wget
 		nvim_url="https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz"
 		filename='nvim-linux64'
@@ -126,10 +131,10 @@ function install_rg() {
 		echo "ripgrep already installed"
 	fi
 
-	if [ $platform == "mac" ]; then
+	if [ "$platform" == "mac" ]; then
 		brew install ripgrep
 		 
-	elif [ $platform == "linux" && ! $root_access ]; then
+	elif [[ "$platform" == "linux" && ! $root_access ]]; then
 		# user does not have root access, install via wget
 		rg_url="https://github.com/BurntSushi/ripgrep/releases/download/12.1.1/ripgrep-12.1.1-x86_64-unknown-linux-musl.tar.gz"
 		filename='ripgrep-12.1.1-x86_64-unkown-linux-musl'
@@ -166,9 +171,9 @@ function install_node_js(){
 		return
 	fi
 	
-	if [$platform == "mac" || $root_access ]; then
+	if [[ "$platform" == "mac" || $root_access ]]; then
 		curl -sL install-node.now.sh/lts | bash
-	elif [ $platform == "linux" && ! $root_access ]; then 
+	elif [ "$platform" == "linux" && ! $root_access ]; then 
 		node_url='https://nodejs.org/download/release/latest/node-v14.6.0-linux-x64.tar.gz'
 		filename='node-v14.6.0-linux-x64'
 		
@@ -199,11 +204,11 @@ function install_clangd(){
 		return
 	fi
 	
-	if [$platform == "mac" ]; then
+	if [ "$platform" == "mac" ]; then
 		brew install clangd
 		add_to_path "clangd" /usr/local/opt/llvm/bin
 
-	elif [ $platform == "linux" && ! $root_access ]; then 
+	elif [ "$platform" == "linux" && ! $root_access ]; then 
 		clangd_url='https://github.com/clangd/clangd/releases/download/10.0.0/clangd-linux-10.0.0.zip'
 		filename='clangd-linux-10.0.0.zip'
 		
@@ -217,7 +222,7 @@ function install_clangd(){
 
 		echo "altering path"
 		add_to_path "clangd" $user_bin_dir/$clangd_name/bin
-	elif [$platform == "linux" && $root_access ]; then
+	elif [[ "$platform" == "linux" && $root_access ]]; then
 		sudo apt install clangd
 	fi
 	
@@ -247,12 +252,12 @@ bin directory.
 "
 
 function main(){
-	while getopts d:b:h: option
+	while getopts d:b:h option
 		do
 			case "${option}" in
 				d) user_home_dir=${OPTARG};;
 				b) user_bin_dir=${OPTARG};;
-				h) echo $USAGE; exit 0;;
+				h) printf $USAGE; exit 0;;
 			esac
 		done
 
