@@ -46,7 +46,7 @@ function check_install(){
 function add_to_path() {
 	echo "" >> $user_home_dir/.bashrc
 	echo "# Adding $1 to PATH" >> $user_home_dir/.bashrc
-	echo "PATH=$PATH:$2" >> $user_home_dir/.bashrc
+	echo "export PATH=$PATH:$2" >> $user_home_dir/.bashrc
 	source $user_home_dir/.bashrc
 }
 
