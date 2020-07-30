@@ -1,20 +1,22 @@
-#! /bin/bash 
+#!/usr/bin/bash 
 
 # use these environment variables
-user_home_dir='~'
-user_bin_dir='~/bin'
+user_home_dir=~
+user_bin_dir=~/bin
 root_access=false
 
 # set up the platform os
 platform=''
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	platform="linux"
-elif [["$OSTYPE" == "darwin"* ]]; then
+elif [[ "$OSTYPE" == "darwin"* ]]; then
 	platform="mac"
 else
 	echo "This script does not support this OS"
 	exit 1
 fi
+
+echo "detected platform = $platform"
 
 # check for root access
 echo "Checking for root access"
@@ -25,6 +27,8 @@ else
 	echo "root access detected"
 	root_access=true
 fi
+
+echo "detected root access = $root_access"
 
 function check_install(){
 	# checking installation
@@ -40,8 +44,9 @@ function check_install(){
 
 # $1 is the name of the program, $2 is the bin path
 function add_to_path() {
-	echo "\nAdding $1 to PATH" >> $user_home_dir/.bashrc
-	echo "PATH=$PATH:$2" >> $user_home_dir/.bashrc
+	echo "" >> $user_home_dir/.bashrc
+	echo "# Adding $1 to PATH" >> $user_home_dir/.bashrc
+	echo "export PATH=$PATH:$2" >> $user_home_dir/.bashrc
 	source $user_home_dir/.bashrc
 }
 
@@ -62,11 +67,12 @@ function install_neovim() {
 	fi
 
 	echo "Installing Neovim"
-	
-	if [ $platform == "mac" ]; then 
-		brew install veovim
+	echo "$platform" "$root_access"	
+	if [[ "$platform" == "mac" ]]; then 
+		brew install neovim
 
-	elif [ $platform == "linux" && ! $root_access ]; then
+	elif [[ "$platform" == "linux" && ! $root_access = true ]]; then
+		
 		# user does not have root access, install via wget
 		nvim_url="https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz"
 		filename='nvim-linux64'
@@ -84,20 +90,22 @@ function install_neovim() {
 		add_to_path "nvim" $user_bin_dir/$filename/bin
 		echo "alias vim='nvim'" >> $user_home_dir/.bashrc
 
-		rm -rf $filename
+		echo "Cleaning up nvim install"
+		rm -rf "$filename"
 	else
 		# have root access just use package manager
+		echo "i'm here"
 		sudo apt install neovim
 	fi
-	
-	check_install nvim
 
-	echo "Cleaning up nvim install"
-	rm -rf $filename
+	check_install nvim
+	
+	# install the undo dir
+	mkdir -p ~/.config/nvim/undodir
 }
 
 function install_nvim_config_file(){
-	if [ ! -f ./init.vim ]; then
+	if [ ! -f "init.vim" ]; then
 		echo "Could not find config fie. Be sure to run this script directly from the repo directory";
 		exit 1
 	fi
@@ -107,7 +115,7 @@ function install_nvim_config_file(){
 	fi
 
 	echo "installing nvim config file"
-	cp ./init.vim $user_home_dir/.config/nvim
+	cp "init.vim" $user_home_dir/.config/nvim
 	
 	if [ $? == 1 ]; then
 		echo "Could not copy config file"
@@ -124,15 +132,16 @@ function install_rg() {
 	echo "Installing ripgrep"
 	if which rg &> /dev/null; then
 		echo "ripgrep already installed"
+		return
 	fi
 
-	if [ $platform == "mac" ]; then
+	if [ "$platform" == "mac" ]; then
 		brew install ripgrep
 		 
-	elif [ $platform == "linux" && ! $root_access ]; then
+	elif [[ "$platform" == "linux" && ! $root_access = true ]]; then
 		# user does not have root access, install via wget
 		rg_url="https://github.com/BurntSushi/ripgrep/releases/download/12.1.1/ripgrep-12.1.1-x86_64-unknown-linux-musl.tar.gz"
-		filename='ripgrep-12.1.1-x86_64-unkown-linux-musl'
+		filename='ripgrep-12.1.1-x86_64-unknown-linux-musl'
 
 		# download file
 		echo "Downloading ripgrep from github"
@@ -144,9 +153,11 @@ function install_rg() {
 
 		# add that file to the path
 		echo "Installing on path"
-		add_to_path "ripgrep" $user_bin_dir/$filename/bin
+		add_to_path "ripgrep" $user_bin_dir/$filename
 
-		rm -rf $filename
+
+		echo "Cleaning up ripgrep install"
+		rm -rf "$filename"
 	else
 		# have root access just use package manager
 		sudo apt install ripgrep
@@ -154,8 +165,6 @@ function install_rg() {
 	
 	check_install rg
 
-	echo "Cleaning up ripgrep install"
-	rm -rf $filename
 }
 
 # CoC requires nodejs so we need to install that first
@@ -166,20 +175,24 @@ function install_node_js(){
 		return
 	fi
 	
-	if [$platform == "mac" || $root_access ]; then
+	if [[ "$platform" == "mac" || $root_access = true ]]; then
 		curl -sL install-node.now.sh/lts | bash
-	elif [ $platform == "linux" && ! $root_access ]; then 
+	elif [[ "$platform" == "linux" && ! $root_access = true ]]; then 
 		node_url='https://nodejs.org/download/release/latest/node-v14.6.0-linux-x64.tar.gz'
 		filename='node-v14.6.0-linux-x64'
 		
 		echo "downloading node-js binaries"
-		curl -O $filename -L $node_url
+		curl -L $node_url > $filename
 
 		echo "extracting to bin directory located at $user_bin_dir"
 		tar -xzf $filename -C $user_bin_dir
 
 		echo "altering path"
 		add_to_path "node-js" $user_bin_dir/$filename/bin
+
+
+		echo "Cleaning up node-js install"
+		rm -rf "$filename"
 
 	else
 		echo "I'm confused about this whole node thing. Exiting."
@@ -188,8 +201,6 @@ function install_node_js(){
 	
 	check_install node
 
-	echo "Cleaning up node-js install"
-	rm -rf $filename
 }
 
 function install_clangd(){
@@ -199,11 +210,11 @@ function install_clangd(){
 		return
 	fi
 	
-	if [$platform == "mac" ]; then
+	if [ "$platform" == "mac" ]; then
 		brew install clangd
 		add_to_path "clangd" /usr/local/opt/llvm/bin
 
-	elif [ $platform == "linux" && ! $root_access ]; then 
+	elif [[ "$platform" == "linux" && ! $root_access = true ]]; then 
 		clangd_url='https://github.com/clangd/clangd/releases/download/10.0.0/clangd-linux-10.0.0.zip'
 		filename='clangd-linux-10.0.0.zip'
 		
@@ -217,13 +228,15 @@ function install_clangd(){
 
 		echo "altering path"
 		add_to_path "clangd" $user_bin_dir/$clangd_name/bin
-	elif [$platform == "linux" && $root_access ]; then
+
+		rm -rf $filename $clangd_name
+
+	elif [[ "$platform" == "linux" && $root_access = true ]]; then
 		sudo apt install clangd
 	fi
 	
 	check_install clangd
 
-	rm -rf $filename $clangd_name
 }
 
 
@@ -247,12 +260,12 @@ bin directory.
 "
 
 function main(){
-	while getopts d:b:h: option
+	while getopts d:b:h option
 		do
 			case "${option}" in
 				d) user_home_dir=${OPTARG};;
 				b) user_bin_dir=${OPTARG};;
-				h) echo $USAGE; exit 0;;
+				h) printf $USAGE; exit 0;;
 			esac
 		done
 
