@@ -61,6 +61,10 @@ noremap <leader>> :vertical:resize +5<CR>
 :nnoremap <Tab> :bnext<CR>
 :nnoremap <S-Tab> :bprevious<CR>
 
+""" set semicolin at end of line
+inoremap <C-l> <C-o>$;
+
+
 "Plugin installation
 call plug#begin('~/.local/share/nvim/plugged')
 
