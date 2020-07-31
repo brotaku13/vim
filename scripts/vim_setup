@@ -1,5 +1,8 @@
 #!/usr/bin/bash 
 
+set -e
+
+
 # use these environment variables
 user_home_dir=~
 user_bin_dir=~/bin
@@ -239,6 +242,9 @@ function install_clangd(){
 
 }
 
+function install_findup(){
+	add_to_path "Findup Script" "$pwd/findup"
+}
 
 
 #vim_setup --home-dir {arg} --bin-dir-location {arg}
@@ -276,8 +282,9 @@ function main(){
 	install_nvim_plugin_manager
 	install_rg
 	install_node_js
-	install_clangd
-	
+	#install_clangd
+	install_findup
+
 	echo "Installation Finished. Don't forget to go into Neovim and run :PlugInstall to get all of the fancy plugins!"
 	exit 0
 }

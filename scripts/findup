@@ -1,0 +1,25 @@
+#!/bin/bash
+
+
+function find_up() {
+    if [[ $# -ne 1 ]]; then
+        echo "Usage: $0 FILE" 1>&2
+        return 1
+    fi
+    local TARGET
+    TARGET="$1"
+    local DIRNAME
+    DIRNAME="$PWD"
+
+    while [[ ! -e "$DIRNAME/$TARGET" ]]; do
+        if [[ "$DIRNAME" == "/" ]]; then
+            echo "$TARGET not found" 1>&2
+            return 2
+        fi
+        DIRNAME="$(dirname "$DIRNAME")"
+    done
+
+    echo -n "$DIRNAME"
+    return 0
+}
+find_up "$@"

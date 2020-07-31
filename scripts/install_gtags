@@ -1,0 +1,17 @@
+#!/bin/bash
+# Quit early if anything fails:
+set -e
+# Override this to your dbc home directory. NOT $HOME.
+wget https://ftp.gnu.org/pub/gnu/global/global-6.6.3.tar.gz
+tar xf global-6.6.3.tar.gz
+mkdir build-global
+pushd build-global
+# Either need to use modern compiler, or to just add std=gnu99 option.
+# My modern gcc version:
+# ../global-6.6.3/configure --enable-static CC=gcc-7.4 CPP=cpp-7.4 CXX=g++-7.4 --with-sqlite3 --enable-dependency-tracking --prefix=$DBC_HOME/usr/local
+# My version with default DBC gcc:
+../global-6.6.3/configure --enable-static --with-sqlite3 --enable-dependency-tracking --prefix=$DBC_HOME/usr/local CFLAGS=-std=gnu99
+make -j16
+make check
+make install
+popd

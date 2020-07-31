@@ -1,0 +1,29 @@
+case $PWD in
+	$splinterdb | $splinterdb/*)
+		echo "in splinterdb"
+		if [ -f "GTAGS" ]; then
+			# GTAGS exists so start an update
+			( cd $splinterdb; global -uv)
+		else
+			# else recreate gtags file
+			(cd $splinterdb; gtags --statistics)
+		fi
+
+	;;
+
+	$bora | $bora/*)
+		echo "in bora"
+		(cd $bora; find lib/avltree modules/vmkernel/lsom/lsom2 modules/vmkernel/tesets/vsan/lsom, modules/vmkernel/tests/vsan/wobtree, modules/vmkernel/wobtree scons/modules/vsanModules.sc vmkernel/tests/vsan vmkernel/include -type f | gtags --statistics -f -)
+		
+	;;
+
+	*)
+		echo "in random"
+		# in any other directory just do everything
+		if [ -f GTAGS ]; then
+			global -uv
+		else
+			gtags --statistics
+		fi
+esac
+

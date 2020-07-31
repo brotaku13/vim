@@ -1,3 +1,4 @@
+" neovim general configuration
 syntax on
 set noerrorbells			"Turns off error sounds
 set tabstop=4 softtabstop=4 " Sets the tab size to 4 spaces
@@ -14,13 +15,15 @@ set incsearch				" Use incremental search
 set relativenumber			" relative line numbes
 set nohlsearch				" no highlight on search
 set mouse=a
-
-
-" neovim general configuration
-set splitright
-set splitbelow
+set showmatch				" Turn on paren highlighting"
+set splitright				" When split - split right
+set splitbelow				" When split horizontal - split lower
 let $NVIM_TUI_ENABLE_TRUE_COLOR=1
 let mapleader = " "
+set colorcolumn=80
+highlight ColorColumn ctermbg=0 guibg=lightgrey
+
+
 
 "" Move between windows
 nnoremap <leader>h :wincmd h<CR>
@@ -76,7 +79,8 @@ Plug 'scrooloose/nerdtree'
 Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
-Plug 'clangd/coc-clangd'
+Plug 'sheerun/vim-polyglot'
+"Plug 'clangd/coc-clangd'
 Plug 'airblade/vim-rooter'
 Plug 'jiangmiao/auto-pairs'
 Plug 'vim-airline/vim-airline'
@@ -89,15 +93,8 @@ Plug 'drewtempelmeyer/palenight.vim'
 call plug#end()
 
 
-" ripgrep configuration
-"let g:rg_command = 'rg --vimgrep -S' " enables smartcasing in ripgrep
-"if executable('rg')
-"	let g:rg_derive_root='true'
-"endif
-
-
 " fzf Config
-nnoremap <C-p> <Esc><Esc>:Files!<CR>
+nnoremap <C-p> <Esc><Esc>:Files<CR>
 nnoremap <C-f> <Esc><Esc>:BLines<CR>
 nnoremap <C-g> :Rg<CR> 
 nnoremap <C-b> :Buffers<CR>
@@ -106,6 +103,24 @@ let g:fzf_action = {
   \ 'ctrl-s': 'split',
   \ 'ctrl-v': 'vsplit'
   \}
+let g:fzf_layout = {'up':'~90%', 'window': { 'width': 0.8, 'height': 0.8,'yoffset':0.5,'xoffset': 0.5, 'highlight': 'Todo', 'border': 'sharp' } }
+let $FZF_DEFAULT_OPS='--layout=reverse --info=inline'
+" Ripgrep advanced
+function! RipgrepFzf(query, fullscreen)
+  let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case %s || true'
+  let initial_command = printf(command_fmt, shellescape(a:query))
+  let reload_command = printf(command_fmt, '{q}')
+  let spec = {'options': ['--phony', '--query', a:query, '--bind', 'change:reload:'.reload_command]}
+  call fzf#vim#grep(initial_command, 1, fzf#vim#with_preview(spec), a:fullscreen)
+endfunction
+command! -nargs=* -bang RG call RipgrepFzf(<q-args>, <bang>0)
+" Get text in files with Rg
+command! -bang -nargs=* Rg
+  \ call fzf#vim#grep(
+  \   'rg --column --line-number --no-heading --color=always --smart-case '.shellescape(<q-args>), 1,
+  \   fzf#vim#with_preview(), <bang>0)
+
+
 
 " coc configuration
 "" Tab Completion
@@ -120,38 +135,151 @@ function! s:check_back_space() abort
   return !col || getline('.')[col - 1]  =~# '\s'
 endfunction
 
-"" Code Navigation
-nmap <leader>gd <Plug>(coc-definition)
-nmap <leader>gy <Plug>(coc-type-definition)
-nmap <leader>gi <Plug>(coc-implementation)
-nmap <leader>gr <Plug>(coc-references)
-nmap <leader>rr <Plug>(coc-rename)
-nmap <leader>g[ <Plug>(coc-diagnostic-prev)
-nmap <leader>g] <Plug>(coc-diagnostic-next)
-nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
-nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
-nnoremap <leader>cr :CocRestart
+
+
+
+""" Code Navigation
+"nmap <leader>gd <Plug>(coc-definition)
+"nmap <leader>gy <Plug>(coc-type-definition)
+"nmap <leader>gi <Plug>(coc-implementation)
+"nmap <leader>gr <Plug>(coc-references)
+"nmap <leader>rr <Plug>(coc-rename)
+"nmap <leader>g[ <Plug>(coc-diagnostic-prev)
+"nmap <leader>g] <Plug>(coc-diagnostic-next)
+"nmap <silent> <leader>gp <Plug>(coc-diagnostic-prev-error)
+"nmap <silent> <leader>gn <Plug>(coc-diagnostic-next-error)
+"nnoremap <leader>cr :CocRestart
 
 
 " Airline Configuration
 let g:airline#extensions#tabline#enabled = 1
 let g:airline_theme='deus'
 
+" --- vim go (polyglot) settings.
+let g:go_highlight_build_constraints = 1
+let g:go_highlight_extra_types = 1
+let g:go_highlight_fields = 1
+let g:go_highlight_functions = 1
+let g:go_highlight_methods = 1
+let g:go_highlight_operators = 1
+let g:go_highlight_structs = 1
+let g:go_highlight_types = 1
+let g:go_highlight_function_parameters = 1
+let g:go_highlight_function_calls = 1
+let g:go_highlight_generate_tags = 1
+let g:go_highlight_format_strings = 1
+let g:go_highlight_variable_declarations = 1
+let g:go_auto_sameids = 1
 
-"One dark setup
-" g:onedark_terminal_italics=1
-" colorscheme onedark
+" NerdTree Setup
+let g:NERDTreeShowHidden = 1
+let g:NERDTreeMinimalUI = 1
+let g:NERDTreeIgnore = []
+let g:NERDTreeStatusline = ''
+nnoremap <silent> <C-n> :NERDTreeToggle<CR>
 
-" Gruvbox setup
-"let g:gruvbox_italic=1
-"let g:gruvbox_bold=1
-"let g:gruvbox_contrast_dark='medium' "soft medium hard
-"set background=dark
-"colorscheme gruvbox
 
-"set background=light
-"let g:one_allow_italics=1
-"colorscheme one
+
+" Jeff's cscope settings
+if has("cscope")
+   " gtags cscope:
+   set csprg=gtags-cscope
+   set csto=1
+   set cst
+
+   " Turn off cscope notification messages so you don't get warnings during
+   " vim startup
+   set nocsverb
+
+   " Load cscope/gtags.
+   " First thing we look for is the GTAGS file in current directory,
+   " or parent, or grand parent, ... and include that if found.
+
+   " relies on existence of "findup" script.
+   let g:gtagsdir = system("findup GTAGS")
+   if !v:shell_error
+      execute "cs add ".g:gtagsdir."/GTAGS"
+   else
+      " Didn't find gtags, do the same search for cscope.out and add if found.
+      let g:cscopedir = system("findup cscope.out")
+      if !v:shell_error
+         set csprg=cscope
+         execute "cs add ".g:cscopedir."/cscope.out"
+      endif
+   endif
+
+   " Turn cscope notification messages back on now that startup is done
+   set csverb "is needed?
+
+   " Using 'CTRL-\' then a search type makes the vim window
+   " "shell-out", with search results displayed on the bottom
+
+   "nmap <C-\>s :cs find s <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-\>g :cs find g <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-\>c :cs find c <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-\>t :cs find t <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-\>e :cs find e <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
+   "nmap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+   "nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+
+   "" Using 'CTRL-spacebar' then a search type makes the vim window
+   "" split horizontally, with search result displayed in
+   "" the new window.
+
+   "nmap <C-[>s :scs find s <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[>g :scs find g <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[>c :scs find c <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[>t :scs find t <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[>e :scs find e <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[>f :scs find f <C-R>=expand("<cfile>")<CR><CR>
+   "nmap <C-[>i :scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+   "nmap <C-[>d :scs find d <C-R>=expand("<cword>")<CR><CR>
+
+   "" Hitting CTRL-space *twice* before the search type does a vertical
+   "" split instead of a horizontal one
+
+   "nmap <C-[><C-[>s :vert scs find s <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[><C-[>g :vert scs find g <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[><C-[>c :vert scs find c <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[><C-[>t :vert scs find t <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[><C-[>e :vert scs find e <C-R>=expand("<cword>")<CR><CR>
+   "nmap <C-[><C-[>i :vert scs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
+   "nmap <C-[><C-[>d :vert scs find d <C-R>=expand("<cword>")<CR><CR>
+
+   "" Once you've done a cs (cscope) query, if there are multiple tags, F9 goes
+   "" to previous, F10 goes to the next one
+   "nmap <F9> :tp<CR>
+   "nmap <F10> :tn<CR>
+endif
+
+function UpdateGtags()
+   " See fish_scripts_referenced/gtags_update.fish
+   " I have a fish wrapper script to decide exactly how to update gtags.
+   " You may want to port that to a bash script and call that here instead
+   " of a fish script. Alternatively you can embed the bash script on one
+   " line here.
+   !bash -c 'gtags_update'
+   set nocsverb
+   cs reset
+   set csverb
+endfunction
+command Gup call UpdateGtags()
+nmap <silent> <C-G> :call UpdateGtags()<CR><CR>
+
+
+
+func! DateTag()
+    return strftime("*** %Y-%m-%d (%A, %B %e, %Y)\r****")
+endfunc
+iabbr <expr> dateme DateTag()
+
+
+func! FixMeTag()
+    return "FIXME: [yfogel ".strftime("%Y-%m-%d")."]"
+endfunc
+iabbr <expr> fixme FixMeTag()
+
 
 
 "set termguicolors
@@ -173,10 +301,3 @@ let g:palenight_terminal_italics=1
 set background=dark
 colorscheme palenight
 
-
-" NerdTree Setup
-let g:NERDTreeShowHidden = 1
-let g:NERDTreeMinimalUI = 1
-let g:NERDTreeIgnore = []
-let g:NERDTreeStatusline = ''
-nnoremap <silent> <C-n> :NERDTreeToggle<CR>
