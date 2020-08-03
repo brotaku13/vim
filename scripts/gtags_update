@@ -1,3 +1,5 @@
+#!/bin/bash
+
 case $PWD in
 	$splinterdb | $splinterdb/*)
 		echo "in splinterdb"
@@ -13,7 +15,8 @@ case $PWD in
 
 	$bora | $bora/*)
 		echo "in bora"
-		(cd $bora; find lib/avltree modules/vmkernel/lsom/lsom2 modules/vmkernel/tesets/vsan/lsom, modules/vmkernel/tests/vsan/wobtree, modules/vmkernel/wobtree scons/modules/vsanModules.sc vmkernel/tests/vsan vmkernel/include -type f | gtags --statistics -f -)
+		#(cd $bora; find lib/avltree modules/vmkernel/lsom/lsom2 modules/vmkernel/tests/vsan/lsom modules/vmkernel/tests/vsan/wobtree modules/vmkernel/wobtree scons/modules/vsanModules.sc vmkernel/tests/vsan vmkernel/include -type f | gtags --statistics -f -)
+		(cd $bora; find . type f | gtags --statistics -f -)
 		
 	;;
 

@@ -1,4 +1,4 @@
-" neovim general configuration
+"neovim general configuration
 syntax on
 set noerrorbells			"Turns off error sounds
 set tabstop=4 softtabstop=4 " Sets the tab size to 4 spaces
@@ -26,15 +26,17 @@ highlight ColorColumn ctermbg=0 guibg=lightgrey
 
 
 "" Move between windows
-nnoremap <leader>h :wincmd h<CR>
-nnoremap <leader>j :wincmd j<CR>
-nnoremap <leader>k :wincmd k<CR>
-nnoremap <leader>l :wincmd l<CR>
+"nnoremap <leader>h :wincmd h<CR>
+"nnoremap <leader>j :wincmd j<CR>
+"nnoremap <leader>k :wincmd k<CR>
+"nnoremap <leader>l :wincmd l<CR>
 nnoremap <leader>v :wincmd v<CR>
 nnoremap <leader>s :wincmd s<CR>
+
 " terminal navigation
 nnoremap <leader>t :split<CR>:res 10<CR>:terminal<CR>
 tnoremap <ESC> <C-\><C-n> <CR>
+
 "tnoremap <A-h> <C-\><C-n>  :wincmd h<CR>
 "tnoremap <A-j> <C-\><C-n>  :wincmd j<CR>
 "tnoremap <A-k>  <C-\><C-n> :wincmd k<CR>
@@ -65,7 +67,7 @@ noremap <leader>> :vertical:resize +5<CR>
 :nnoremap <S-Tab> :bprevious<CR>
 
 """ set semicolin at end of line
-inoremap <C-l> <C-o>$;
+inoremap <C-l> <C-o>$;<CR>
 
 
 "Plugin installation
@@ -80,7 +82,7 @@ Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
 Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'sheerun/vim-polyglot'
-"Plug 'clangd/coc-clangd'
+Plug 'christoomey/vim-tmux-navigator'
 Plug 'airblade/vim-rooter'
 Plug 'jiangmiao/auto-pairs'
 Plug 'vim-airline/vim-airline'
@@ -121,8 +123,10 @@ command! -bang -nargs=* Rg
   \   fzf#vim#with_preview(), <bang>0)
 
 
+nnoremap <leader>f <Esc><Esc>:BLines <C-R>=expand("<cword>")<CR><CR>
+nnoremap <leader>rg <Esc><Esc>:Rg <C-R>=expand("<cword>")<CR><CR>
 
-" coc configuration
+"coc configuration
 "" Tab Completion
 inoremap <silent><expr> <TAB>
       \ pumvisible() ? "\<C-n>" :
@@ -136,7 +140,13 @@ function! s:check_back_space() abort
 endfunction
 
 
+let g:tmux_navigator_no_mappings = 1
 
+nnoremap <silent> <C-h> :TmuxNavigateLeft<cr>
+nnoremap <silent> <C-j> :TmuxNavigateDown<cr>
+nnoremap <silent> <C-k> :TmuxNavigateUp<cr>
+nnoremap <silent> <C-l> :TmuxNavigateRight<cr>
+nnoremap <silent> <C-e> :TmuxNavigatePrevious<cr>
 
 """ Code Navigation
 "nmap <leader>gd <Plug>(coc-definition)
@@ -222,6 +232,16 @@ if has("cscope")
    "nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
    "nmap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
    "nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
+	
+   nmap <leader>gs :cs find s <C-R>=expand("<cword>")<CR><CR> " find C symbol "
+   nmap <leader>gg :cs find g <C-R>=expand("<cword>")<CR><CR> " find defintion "
+   nmap <leader>gc :cs find c <C-R>=expand("<cword>")<CR><CR> " find functions calling this "
+   nmap <leader>gt :cs find t <C-R>=expand("<cword>")<CR><CR> " find this text "
+   nmap <leader>ge :cs find e <C-R>=expand("<cword>")<CR><CR> " find this egrep pattern "
+   nmap <leader>gf :cs find f <C-R>=expand("<cfile>")<CR><CR> " find this file"
+   nmap <leader>gi :cs find i ^<C-R>=expand("<cfile>")<CR><CR> " find files including this one"
+   nmap <leader>gd :cs find d <C-R>=expand("<cword>")<CR><CR> " find functions called by this one"
+
 
    "" Using 'CTRL-spacebar' then a search type makes the vim window
    "" split horizontally, with search result displayed in
@@ -249,8 +269,8 @@ if has("cscope")
 
    "" Once you've done a cs (cscope) query, if there are multiple tags, F9 goes
    "" to previous, F10 goes to the next one
-   "nmap <F9> :tp<CR>
-   "nmap <F10> :tn<CR>
+   nmap <C-[> :tp<CR>
+   nmap <C-]> :tn<CR>
 endif
 
 function UpdateGtags()
@@ -265,8 +285,6 @@ function UpdateGtags()
    set csverb
 endfunction
 command Gup call UpdateGtags()
-nmap <silent> <C-G> :call UpdateGtags()<CR><CR>
-
 
 
 func! DateTag()

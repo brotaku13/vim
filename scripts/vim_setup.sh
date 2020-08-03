@@ -63,6 +63,10 @@ function create_user_bin(){
 	mkdir -p $user_bin_dir
 }
 
+function install_my_scripts(){
+	add_to_path "my scripts" "$pwd"
+}
+
 function install_neovim() {
 	if which nvim &> /dev/null; then
 		echo "Neovim already installed!"
@@ -108,7 +112,8 @@ function install_neovim() {
 }
 
 function install_nvim_config_file(){
-	if [ ! -f "init.vim" ]; then echo "Could not find config fie. Be sure to run this script directly from the repo directory";
+	if [ ! -f "init.vim" ]; then
+		echo "Could not find config fie. Be sure to run this script directly from the repo directory";
 		exit 1
 	fi
 	if [ ! -d $user_home_dir/.config/nvim ]; then
@@ -205,59 +210,40 @@ function install_node_js(){
 
 }
 
-#function install_clangd(){
-	#echo "Installing clangd for the coc c/c++ plugin"
-	#if which clangd &> /dev/null; then
-		#echo "clangd is already installed"
-		#return
-	#fi
-	
-	#if [ "$platform" == "mac" ]; then
-		#brew install clangd
-		#add_to_path "clangd" /usr/local/opt/llvm/bin
-
-	#elif [[ "$platform" == "linux" && ! $root_access = true ]]; then 
-		#clangd_url='https://github.com/clangd/clangd/releases/download/10.0.0/clangd-linux-10.0.0.zip'
-		#filename='clangd-linux-10.0.0.zip'
-		
-		#echo "downloading clangd binaries"
-		#wget -cO - $clangd_url > $filename
-
-		#echo "extracting to bin directory located at $user_bin_dir"
-		#unzip $filename -d $user_bin_dir
-		
-		#clangd_name="clangd_10.0.0"
-
-		#echo "altering path"
-		#add_to_path "clangd" $user_bin_dir/$clangd_name/bin
-
-		#rm -rf $filename $clangd_name
-
-	#elif [[ "$platform" == "linux" && $root_access = true ]]; then
-		#sudo apt install clangd
-	#fi
-	
-	#check_install clangd
-
-#}
-
-function install_findup(){
-	add_to_path "Findup Script" "$pwd/findup"
-}
-
-function install_tmux_config() {
-	if [ ! -f ".tmux.conf" ]; then
-		echo "Could not find tmux config fie. Be sure to run this script directly from the repo directory";
-		exit 1
+function install_clangd(){
+	echo "Installing clangd for the coc c/c++ plugin"
+	if which clangd &> /dev/null; then
+		echo "clangd is already installed"
+		return
 	fi
-
-	echo "installing tmux config file"
-	cp ".tmux.conf" $user_home_dir
 	
-	if [ $? == 1 ]; then
-		echo "Could not copy tmux config file"
-		exit 1
+	if [ "$platform" == "mac" ]; then
+		brew install clangd
+		add_to_path "clangd" /usr/local/opt/llvm/bin
+
+	elif [[ "$platform" == "linux" && ! $root_access = true ]]; then 
+		clangd_url='https://github.com/clangd/clangd/releases/download/10.0.0/clangd-linux-10.0.0.zip'
+		filename='clangd-linux-10.0.0.zip'
+		
+		echo "downloading clangd binaries"
+		wget -cO - $clangd_url > $filename
+
+		echo "extracting to bin directory located at $user_bin_dir"
+		unzip $filename -d $user_bin_dir
+		
+		clangd_name="clangd_10.0.0"
+
+		echo "altering path"
+		add_to_path "clangd" $user_bin_dir/$clangd_name/bin
+
+		rm -rf $filename $clangd_name
+
+	elif [[ "$platform" == "linux" && $root_access = true ]]; then
+		sudo apt install clangd
 	fi
+	
+	check_install clangd
+
 }
 
 
@@ -296,18 +282,14 @@ function main(){
 	install_nvim_plugin_manager
 	install_rg
 	install_node_js
-	install_findup
-	install_tmux_config
+	#install_clangd
+	install_my_scripts	
 
 	echo "Installation Finished. Don't forget to go into Neovim and run :PlugInstall to get all of the fancy plugins!"
 	exit 0
 }
 
 main "$@"
-
-
-
-
 
 
 
