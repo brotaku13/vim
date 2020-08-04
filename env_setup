@@ -1,0 +1,323 @@
+#!/bin/bash
+
+set -e
+
+LOCAL=$DBC_HOME/.local
+CONFIG_DIR=./configs
+TEMP_DIR=./temp
+
+
+NEOVIM_VERSION=nvim-linux64
+
+function print_red() {
+	echo -e "\033[0;31m$1\033[0m"
+}
+
+function print_green() {
+	echo -e "\033[0;31m$1\033[0m"
+}
+
+function check_executable(){
+	if which $1 &> /dev/null; then
+		print_green "Installatin Confirmed"
+		return 0
+	else
+		print_red "Executable could not be found in path"
+		return 1
+	fi
+}
+
+mkdir -p $LOCAL 
+mkdir -p $TEMP_DIR
+
+
+function neovim() {
+	echo "Installing Neovim ..."
+	if which nvim &> /dev/null; then
+		print_green "Neovim already installed"
+		return
+	fi
+
+	pushd .
+	cd $TEMP_DIR
+	git clone https://github.com/neovim/neovim.git
+	cd neovim
+	make CMAKE_BUILD_TYPE=Release CMAKE_INSTALL_PREFIX=$LOCAL
+	if [ $? != 0 ]; then
+		print_red "Neovim make command failed :("
+	else
+		mkdir -p ~/.config/nvim/undodir
+		print_green "Neovim installed!"
+	fi
+	popd
+
+	check_executable "nvim"
+
+}
+
+function neovim_plugin() {
+	echo "Installing Plug plugin manager"
+	curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+	print_green "Plugin manage installed"
+}
+
+function nvim_config() {
+	echo "Installing nvim config file"
+	if [ ! -f "$CONFIG_DIR/init.vim" ]; then
+		print_red "Could not find nvim init.vim file. Is it not in $CONFIG_DIR?"
+		return 1
+	fi
+
+	mkdir -p $HOME/.config/nvim
+	cp $CONFIG_DIR/init.vim $HOME/.config/nvim
+	
+	if [ $? != 0 ]; then 
+		print_red "Could not install init.vim"
+		return 1
+	else
+		print_green "Installed nvim init.vim!"
+	fi
+}
+
+function bashrc() {
+	echo "Installing .bashrc file"
+	if [ ! -f "$CONFIG_DIR/.bashrc" ]; then
+		print_red "Could not find .bashrc file. Is it not in $CONFIG_DIR?"
+		return 1
+	fi
+
+	cp $CONFIG_DIR/.bashrc $HOME
+	
+	if [ $? != 0 ]; then 
+		print_red "Could not install .bashrc" 
+		return 1
+	else
+		print_green "Installed .bashrc!"
+		source $HOME/.bashrc
+
+	fi
+}
+
+function ripgrep() {
+	echo "installing ripgrep"
+	if which rg &> /dev/null; then
+		print_green "Ripgrep already installed!"
+		return 0
+	fi
+	
+	pushd .
+	cd $TEMP_DIR
+	wget https://github.com/BurntSushi/ripgrep/releases/download/12.1.1/ripgrep-12.1.1-x86_64-unknown-linux-musl.tar.gz 
+	tar -xzf ripgrep-12.1.1-x86_64-unknown-linux-musl.tar.gz
+	cd ripgrep-12.1.1-x86_64-unknown-linux-musl
+	mkdir -p $LOCAL/share
+	cp -r doc $LOCAL/doc
+	cp rg $LOCAL/bin
+	popd
+	check_executable "rg"
+
+}
+
+function node_js() {
+	echo "Installing Node JS"
+	if which node &> /dev/null; then
+		print_green "Node js already installed"
+		return 0
+	fi
+	pushd .
+	cd $TEMP_DIR
+	wget https://nodejs.org/dist/v14.6.0/node-v14.6.0-linux-x64.tar.gz
+	tar -xzf node-v14.6.0-linux-x64.tar.gz
+	cp -r node-v14.6.0-linux-x64/* $LOCAL
+	popd
+
+	check_executable "node"
+}
+
+function findup() {
+	echo "Installing findup script"
+	if [ ! -f ./scripts/findup ]; then
+		print_red "Could not find findup script"
+		return 1
+	fi
+
+	cp ./scripts/findup $LOCAL/bin
+	if [ $? != 0 ]; then
+		print_red "Could not move findup script"
+		return 1
+	else
+		print_green "Installed findup script"
+		return 0
+	fi
+}
+
+function gtags() {
+	echo "Installing GNU Global"
+	if which gtags &> /dev/null; then  
+		print_green "Gtags already installed"
+		return 0
+	fi
+
+	pushd .
+	cd $TEMP_DIR
+	wget https://ftp.gnu.org/pub/gnu/global/global-6.6.3.tar.gz
+	tar xf global-6.6.3.tar.gz
+	mkdir build-global
+	pushd build-global
+	# My version with default DBC gcc:
+	../global-6.6.3/configure --enable-static --with-sqlite3 --enable-dependency-tracking --prefix=$DBC_HOME/.local CFLAGS=-std=gnu99
+	make -j16
+	make check
+	make install
+	popd
+	popd
+	check_executable "gtags"
+}
+
+function gtags_update() {
+	echo "Installing gtags_update script"
+	if [ ! -f ./scripts/gtags_update ]; then
+		print_red "Could not find gtags_update script"
+		return 1
+	fi
+
+	cp ./scripts/gtags_update $LOCAL/bin
+	if [ $? != 0 ]; then
+		print_red "Could not move gtags_update script"
+		return 1
+	else
+		print_green "Installed gtags_update script"
+		return 0
+	fi
+}
+
+function libevent() {
+	echo "Installing libevent lib for tmux"
+	
+	pushd .
+	cd $TEMP_DIR
+
+	wget https://github.com/libevent/libevent/releases/download/release-2.1.12-stable/libevent-2.1.12-stable.tar.gz
+	tar -zxf libevent-2.1.12-stable.tar.gz 
+	cd libevent-2.1.12-stable
+	mkdir -p $LOCAL/lib/pkgconfig
+	./configure --prefix=$DBC_HOME/.local --enable-shared --enable-dependency-tracking --prefix=$DBC_HOME/.local CFLAGS=-std=gnu99 --with-pkg-config-libdir=$LOCAL/lib/pkgconfig
+	make -j16 && make install
+
+	popd
+
+	print_green "Libevent installed"
+
+}
+
+function ncurses() {
+	echo "Installing ncurses"
+	pushd .
+	cd $TEMP_DIR
+
+	git clone https://github.com/mirror/ncurses.git
+	cd ncurses
+	mkdir -p $LOCAL/lib/pkgconfig
+	./configure --prefix=$DBC_HOME/.local --with-shared --with-termlib --enable-pc-files --with-pkg-config-libdir=$DBC_HOME/.local/lib/pkgconfig
+	make -j16 && make install
+	
+	popd
+
+	print_green "ncurses installed"
+}
+
+function tmux_install() {
+	echo "Installing Tmux"
+
+	pushd .
+	cd $TEMP_DIR
+
+	wget https://github.com/tmux/tmux/releases/download/3.1b/tmux-3.1b.tar.gz
+	tar -xzf tmux-3.1b.tar.gz 
+	cd tmux-3.1b
+	PKG_CONFIG_PATH=$DBC_HOME/.local/lib/pkgconfig ./configure --enable-dependency-tracking --prefix=$DBC_HOME/.local CFLAGS=-std=gnu99
+	make -j16 && make install
+
+	popd
+
+	print_green "Tmux installed"
+}
+
+function tmux_config() {
+	echo "Installing tmux config file"
+	if [ ! -f "$CONFIG_DIR/.tmux.conf" ]; then
+		print_red "Could not find nvim .tmux.conf file. Is it not in $CONFIG_DIR?"
+		return 1
+	fi
+
+	cp $CONFIG_DIR/.tmux.conf $HOME
+	
+	if [ $? != 0 ]; then 
+		print_red "Could not install .tmux.conf" 
+		return 1
+	else
+		print_green "Installed tmux conf file"
+	fi
+}
+
+function tmux_all(){
+	libevent
+	ncurses
+	tmux_install
+	tmux_config
+}
+
+function all() {
+	bashrc
+	neovim
+	neovim_plugin
+	nvim_config
+	ripgrep
+	node_js
+	findup_script
+	install_gtags
+	gtags_update
+	tmux_all
+}
+
+USAGE="\
+Run this program from within the git repo. \n 
+	env_setup [all | neovim | nvim_plugin | nvim_config | bashrc | ripgrep | \n
+			  \t\t node_js | findup_script | gtags | gtags_update | tmux | \n
+			   \t\ttmux_config | libevent | ncurses ] \n\n
+
+	all			\t\t\tinstalls all targets \n
+	neovim		\t\tinstalls neovim from git repo \n
+	neovim_plugin\t\tinstalls neovim Plug plugin manager \n
+	nvim_config		\t\tcopies init.vim to $HOME \n 
+	bashrc		\t\tcopies .bashrc to $HOME \n
+	ripgrep			\t\tinstalls ripgrep \n
+	node_js			\t\tinstalls node_js (needed for CoC nvim plugin) \n
+	findup_script	\t\tinstalls findup script to $USER_PREFIX_DIR/bin \n
+	gtags			\t\t\tinstalls gnu global \n
+	gtags_script	\t\tiinstalls gtags_update script to $USER_PREFIX_DIR/bin \n
+	tmux_install	\t\tinstalls newest version of tmux \n
+	tmux_config		\t\tcopies .tmux.conf file to $HOME \n
+	libevent		\t\tinstalls libevent (needed by tmux) \n
+	ncurses			\t\tinstalls ncurses (needed by tmux) \n
+	gtags_update	\t\tinstalls gtags_update script to $USER_PREFIX_DIR/bin \n
+
+"
+function main(){
+	case $1 in 
+		all | neovim | neovim_plugin | nvim_config | bashrc \
+			| ripgrep | node_js | findup_script | gtags | gtags_update \
+			| tmux_install | tmux_config | libevent | ncurses)
+			$1 ${@:2}
+			;;
+		help )
+			echo -e $USAGE
+			;;
+		* )
+			print_red "Invalid Command"
+			echo -e $USAGE
+			;;
+	esac
+}
+
+main "$@"
