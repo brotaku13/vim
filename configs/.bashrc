@@ -12,7 +12,7 @@ alias ll='ls -la'
 
 alias grep='grep --color'
 
-export PATH=/dbc/sc-dbc2119/bcaulfield/.local/bin:/build/apps/bin:/build/trees/bin:/build/trees/main/build/bin:/mts/git/tools/bin:/build/toolchain/lin64/gdb-7.5/bin:$PATH
+export PATH=/dbc/sc-dbc2119/bcaulfield/.local/bin:/build/apps/bin:/build/trees/bin:/build/trees/main/build/bin:/mts/git/tools/bin:$PATH
 export P4CONFIG=.p4config
 export HISTFILE=/tmp/$USER.bash_history
 
@@ -28,4 +28,6 @@ alias vim='nvim'
 
 export PATH=$PATH:/dbc/sc-dbc2119/bcaulfield/bin/clangd_10.0.0/bin
 export LD_LIBRARY_PATH=/dbc/sc-dbc2119/bcaulfield/.local/lib:
-export MANPATH=/dbc/sc-dbc2119/bcaulfield/.local/share/man
+export MANPATH=$MANPATH:/dbc/sc-dbc2119/bcaulfield/.local/share/man
+:w
+:q
