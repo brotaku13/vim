@@ -7,8 +7,6 @@ CONFIG_DIR=./configs
 TEMP_DIR=./temp
 
 
-NEOVIM_VERSION=nvim-linux64
-
 function print_red() {
 	echo -e "\033[0;31m$1\033[0m"
 }
@@ -267,21 +265,24 @@ function tmux_all(){
 	tmux_config
 }
 
-function git_install() {
-	echo "Installing newest version of git"
+# Note: Intalling from source means libcurl4-openssl needs to be installed
+# and to my knowledge, I have no way of installing that without admin priveleges
+# so we just won't get the new git version
+#function git_install() {
+	#echo "Installing newest version of git"
 
-	pushd .
-	cd $TEMP_DIR
-	wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
-	tar -xzf git-2.9.5.tar.gz
-	cd git-2.9.5
-	make configure
-	./configure --prefix=$DBC_HOME/.local 
-	make -j16 && make install
+	#pushd .
+	#cd $TEMP_DIR
+	#wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
+	#tar -xzf git-2.9.5.tar.gz
+	#cd git-2.9.5
+	#make configure
+	#./configure --prefix=$DBC_HOME/.local 
+	#make -j16 && make install
 
-	popd
-	print_green "Installed recent version of git!"
-}
+	#popd
+	#print_green "Installed recent version of git!"
+#}
 
 function all() {
 	bashrc
@@ -294,7 +295,7 @@ function all() {
 	install_gtags
 	gtags_update
 	tmux_all
-	git_install
+	#git_install
 }
 
 USAGE="\
@@ -318,13 +319,12 @@ Run this program from within the git repo. \n
 	libevent		\t\tinstalls libevent (needed by tmux) \n
 	ncurses			\t\tinstalls ncurses (needed by tmux) \n
 	gtags_update	\t\tinstalls gtags_update script to $USER_PREFIX_DIR/bin \n
-	git_install		\t\tinstalls git v2.9.5
 "
 function main(){
 	case $1 in 
 		all | neovim | neovim_plugin | nvim_config | bashrc \
 			| ripgrep | node_js | findup_script | gtags | gtags_update \
-			| tmux_install | tmux_config | libevent | ncurses | git_install)
+			| tmux_install | tmux_config | libevent | ncurses )
 			$1 ${@:2}
 			;;
 		help )
