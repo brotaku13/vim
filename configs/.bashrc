@@ -17,6 +17,9 @@ export P4CONFIG=.p4config
 export HISTFILE=/tmp/$USER.bash_history
 
 export DBC_HOME=/dbc/sc-dbc2119/bcaulfield
+export bora=$DBC_HOME/main-18q2/bora
+export splinterdb=$bora/modules/vmkernel/wobtree/splinterdb
+
 
 for a in /mts/git/bin/*; do alias `basename $a`=$a; done
 
@@ -29,5 +32,3 @@ alias vim='nvim'
 export PATH=$PATH:/dbc/sc-dbc2119/bcaulfield/bin/clangd_10.0.0/bin
 export LD_LIBRARY_PATH=/dbc/sc-dbc2119/bcaulfield/.local/lib:
 export MANPATH=$MANPATH:/dbc/sc-dbc2119/bcaulfield/.local/share/man
-:w
-:q

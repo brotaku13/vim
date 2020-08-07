@@ -258,6 +258,23 @@ function tmux_config() {
 	fi
 }
 
+function gtags_config() {
+	echo "Installing gtags config file"
+	if [ ! -f "$CONFIG_DIR/.globalrc" ]; then
+		print_red "Could not find nvim .globalrc file. Is it not in $CONFIG_DIR?"
+		return 1
+	fi
+
+	cp $CONFIG_DIR/.globalrc $HOME
+	
+	if [ $? != 0 ]; then 
+		print_red "Could not install .globalrc" 
+		return 1
+	else
+		print_green "Installed gtags config file"
+	fi
+}
+
 function tmux_all(){
 	libevent
 	ncurses
@@ -296,6 +313,7 @@ function all() {
 	gtags_update
 	tmux_all
 	#git_install
+	gtags_config
 }
 
 USAGE="\
@@ -319,12 +337,13 @@ Run this program from within the git repo. \n
 	libevent		\t\tinstalls libevent (needed by tmux) \n
 	ncurses			\t\tinstalls ncurses (needed by tmux) \n
 	gtags_update	\t\tinstalls gtags_update script to $USER_PREFIX_DIR/bin \n
+	gtags_config \t\tinstalls gtags .globalrc to the $HOME\n
 "
 function main(){
 	case $1 in 
 		all | neovim | neovim_plugin | nvim_config | bashrc \
 			| ripgrep | node_js | findup_script | gtags | gtags_update \
-			| tmux_install | tmux_config | libevent | ncurses )
+			| tmux_install | tmux_config | libevent | ncurses | gtags_config )
 			$1 ${@:2}
 			;;
 		help )
