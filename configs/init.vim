@@ -1,8 +1,9 @@
 "neovim general configuration
 syntax on
 set noerrorbells			"Turns off error sounds
-set tabstop=4 softtabstop=4 " Sets the tab size to 4 spaces
-set shiftwidth=4 
+set tabstop=3 softtabstop=3 " Sets the tab size to 4 spaces
+set expandtab
+set shiftwidth=3
 set smartindent				" smart indenting when possible
 set nu						" sets numbers on line to be on
 set nowrap					" turns off line wrapping
@@ -12,6 +13,7 @@ set nobackup				" Don't create backup files
 set undodir=~/.config/nvim/undodir
 set undofile				" use undo files
 set incsearch				" Use incremental search
+set ignorecase          " ignore case during search
 set relativenumber			" relative line numbes
 set nohlsearch				" no highlight on search
 set mouse=a
@@ -23,13 +25,9 @@ let mapleader = " "
 set colorcolumn=80
 highlight ColorColumn ctermbg=0 guibg=lightgrey
 
+autocmd FileType c,h autocmd BufWritePre <buffer> %s/\s\+$//e " Automatically remove white space on save on c, h files
 
-
-"" Move between windows
-"nnoremap <leader>h :wincmd h<CR>
-"nnoremap <leader>j :wincmd j<CR>
-"nnoremap <leader>k :wincmd k<CR>
-"nnoremap <leader>l :wincmd l<CR>
+" Move between windows
 nnoremap <leader>v :wincmd v<CR>
 nnoremap <leader>s :wincmd s<CR>
 
@@ -37,10 +35,7 @@ nnoremap <leader>s :wincmd s<CR>
 nnoremap <leader>t :split<CR>:res 10<CR>:terminal<CR>
 tnoremap <ESC> <C-\><C-n> <CR>
 
-"tnoremap <A-h> <C-\><C-n>  :wincmd h<CR>
-"tnoremap <A-j> <C-\><C-n>  :wincmd j<CR>
-"tnoremap <A-k>  <C-\><C-n> :wincmd k<CR>
-"tnoremap <A-l>  <C-\><C-n>  :wincmd l<CR>
+:nnoremap <leader>s :%s/\<<C-r><C-w>\>/
 
 imap jj <ESC>
 let loaded_matchparen = 1
@@ -83,7 +78,7 @@ Plug 'junegunn/fzf.vim'
 Plug 'neoclide/coc.nvim', {'branch': 'release'}
 Plug 'sheerun/vim-polyglot'
 Plug 'christoomey/vim-tmux-navigator'
-Plug 'airblade/vim-rooter'
+"Plug 'airblade/vim-rooter'
 Plug 'jiangmiao/auto-pairs'
 Plug 'vim-airline/vim-airline'
 Plug 'vim-airline/vim-airline-themes'
@@ -94,11 +89,13 @@ Plug 'drewtempelmeyer/palenight.vim'
 
 call plug#end()
 
+" NerdCommenter 
+let g:NERDCustomDelimiters = {'c': { 'left': '//', 'right': '', 'leftAlt': '' }}
 
 " fzf Config
 nnoremap <C-p> <Esc><Esc>:Files<CR>
 nnoremap <C-f> <Esc><Esc>:BLines<CR>
-nnoremap <C-g> :Rg<CR> 
+nnoremap <C-g> :Rg<CR>
 nnoremap <C-b> :Buffers<CR>
 let g:fzf_action = {
   \ 'ctrl-t': 'tab split',
@@ -107,6 +104,7 @@ let g:fzf_action = {
   \}
 let g:fzf_layout = {'up':'~90%', 'window': { 'width': 0.8, 'height': 0.8,'yoffset':0.5,'xoffset': 0.5, 'highlight': 'Todo', 'border': 'sharp' } }
 let $FZF_DEFAULT_OPS='--layout=reverse --info=inline'
+
 " Ripgrep advanced
 function! RipgrepFzf(query, fullscreen)
   let command_fmt = 'rg --column --line-number --no-heading --color=always --smart-case %s || true'
@@ -186,6 +184,7 @@ let g:NERDTreeShowHidden = 1
 let g:NERDTreeMinimalUI = 1
 let g:NERDTreeIgnore = []
 let g:NERDTreeStatusline = ''
+let g:NERDTreeChDirMode = 0
 nnoremap <silent> <C-n> :NERDTreeToggle<CR>
 
 
@@ -232,7 +231,7 @@ if has("cscope")
    "nmap <C-\>f :cs find f <C-R>=expand("<cfile>")<CR><CR>
    "nmap <C-\>i :cs find i ^<C-R>=expand("<cfile>")<CR>$<CR>
    "nmap <C-\>d :cs find d <C-R>=expand("<cword>")<CR><CR>
-	
+
    nmap <leader>gs :cs find s <C-R>=expand("<cword>")<CR><CR> " find C symbol "
    nmap <leader>gg :cs find g <C-R>=expand("<cword>")<CR><CR> " find defintion "
    nmap <leader>gc :cs find c <C-R>=expand("<cword>")<CR><CR> " find functions calling this "
@@ -242,6 +241,23 @@ if has("cscope")
    nmap <leader>gi :cs find i ^<C-R>=expand("<cfile>")<CR><CR> " find files including this one"
    nmap <leader>gd :cs find d <C-R>=expand("<cword>")<CR><CR> " find functions called by this one"
 
+   nmap <leader>vgs :vert :scs find s <C-R>=expand("<cword>")<CR><CR> " find C symbol "
+   nmap <leader>vgg :vert :scs find g <C-R>=expand("<cword>")<CR><CR> " find defintion "
+   nmap <leader>vgc :vert :scs find c <C-R>=expand("<cword>")<CR><CR> " find functions calling this "
+   nmap <leader>vgt :vert :scs find t <C-R>=expand("<cword>")<CR><CR> " find this text "
+   nmap <leader>vge :vert :scs find e <C-R>=expand("<cword>")<CR><CR> " find this egrep pattern "
+   nmap <leader>vgf :vert :scs find f <C-R>=expand("<cfile>")<CR><CR> " find this file"
+   nmap <leader>vgi :vert :scs find i ^<C-R>=expand("<cfile>")<CR><CR> " find files including this one"
+   nmap <leader>vgd :vert :scs find d <C-R>=expand("<cword>")<CR><CR> " find functions called by this one"
+
+   nmap <leader>sgs :scs find s <C-R>=expand("<cword>")<CR><CR> " find C symbol "
+   nmap <leader>sgg :scs find g <C-R>=expand("<cword>")<CR><CR> " find defintion "
+   nmap <leader>sgc :scs find c <C-R>=expand("<cword>")<CR><CR> " find functions calling this "
+   nmap <leader>sgt :scs find t <C-R>=expand("<cword>")<CR><CR> " find this text "
+   nmap <leader>sge :scs find e <C-R>=expand("<cword>")<CR><CR> " find this egrep pattern "
+   nmap <leader>sgf :scs find f <C-R>=expand("<cfile>")<CR><CR> " find this file"
+   nmap <leader>sgi :scs find i ^<C-R>=expand("<cfile>")<CR><CR> " find files including this one"
+   nmap <leader>sgd :scs find d <C-R>=expand("<cword>")<CR><CR> " find functions called by this one"
 
    "" Using 'CTRL-spacebar' then a search type makes the vim window
    "" split horizontally, with search result displayed in
@@ -294,7 +310,7 @@ iabbr <expr> dateme DateTag()
 
 
 func! FixMeTag()
-    return "FIXME: [yfogel ".strftime("%Y-%m-%d")."]"
+    return "FIXME: [bcaulfield ".strftime("%Y-%m-%d")."]"
 endfunc
 iabbr <expr> fixme FixMeTag()
 
@@ -319,3 +335,78 @@ let g:palenight_terminal_italics=1
 set background=dark
 colorscheme palenight
 
+
+
+
+" Delete buffer while keeping window layout (don't close buffer's windows).
+" Version 2008-11-18 from http://vim.wikia.com/wiki/VimTip165
+if v:version < 700 || exists('loaded_bclose') || &cp
+  finish
+endif
+let loaded_bclose = 1
+if !exists('bclose_multiple')
+  let bclose_multiple = 1
+endif
+
+" Display an error message.
+function! s:Warn(msg)
+  echohl ErrorMsg
+  echomsg a:msg
+  echohl NONE
+endfunction
+
+" Command ':Bclose' executes ':bd' to delete buffer in current window.
+" The window will show the alternate buffer (Ctrl-^) if it exists,
+" or the previous buffer (:bp), or a blank buffer if no previous.
+" Command ':Bclose!' is the same, but executes ':bd!' (discard changes).
+" An optional argument can specify which buffer to close (name or number).
+function! s:Bclose(bang, buffer)
+  if empty(a:buffer)
+    let btarget = bufnr('%')
+  elseif a:buffer =~ '^\d\+$'
+    let btarget = bufnr(str2nr(a:buffer))
+  else
+    let btarget = bufnr(a:buffer)
+  endif
+  if btarget < 0
+    call s:Warn('No matching buffer for '.a:buffer)
+    return
+  endif
+  if empty(a:bang) && getbufvar(btarget, '&modified')
+    call s:Warn('No write since last change for buffer '.btarget.' (use :Bclose!)')
+    return
+  endif
+  " Numbers of windows that view target buffer which we will delete.
+  let wnums = filter(range(1, winnr('$')), 'winbufnr(v:val) == btarget')
+  if !g:bclose_multiple && len(wnums) > 1
+    call s:Warn('Buffer is in multiple windows (use ":let bclose_multiple=1")')
+    return
+  endif
+  let wcurrent = winnr()
+  for w in wnums
+    execute w.'wincmd w'
+    let prevbuf = bufnr('#')
+    if prevbuf > 0 && buflisted(prevbuf) && prevbuf != btarget
+      buffer #
+    else
+      bprevious
+    endif
+    if btarget == bufnr('%')
+      " Numbers of listed buffers which are not the target to be deleted.
+      let blisted = filter(range(1, bufnr('$')), 'buflisted(v:val) && v:val != btarget')
+      " Listed, not target, and not displayed.
+      let bhidden = filter(copy(blisted), 'bufwinnr(v:val) < 0')
+      " Take the first buffer, if any (could be more intelligent).
+      let bjump = (bhidden + blisted + [-1])[0]
+      if bjump > 0
+        execute 'buffer '.bjump
+      else
+        execute 'enew'.a:bang
+      endif
+    endif
+  endfor
+  execute 'bdelete'.a:bang.' '.btarget
+  execute wcurrent.'wincmd w'
+endfunction
+command! -bang -complete=buffer -nargs=? Bclose call <SID>Bclose(<q-bang>, <q-args>)
+nnoremap <silent> <Leader>bd :Bclose<CR>

@@ -282,24 +282,6 @@ function tmux_all(){
 	tmux_config
 }
 
-# Note: Intalling from source means libcurl4-openssl needs to be installed
-# and to my knowledge, I have no way of installing that without admin priveleges
-# so we just won't get the new git version
-#function git_install() {
-	#echo "Installing newest version of git"
-
-	#pushd .
-	#cd $TEMP_DIR
-	#wget https://mirrors.edge.kernel.org/pub/software/scm/git/git-2.9.5.tar.gz
-	#tar -xzf git-2.9.5.tar.gz
-	#cd git-2.9.5
-	#make configure
-	#./configure --prefix=$DBC_HOME/.local 
-	#make -j16 && make install
-
-	#popd
-	#print_green "Installed recent version of git!"
-#}
 
 function all() {
 	bashrc
@@ -312,7 +294,6 @@ function all() {
 	install_gtags
 	gtags_update
 	tmux_all
-	#git_install
 	gtags_config
 }
 

@@ -1,0 +1,75 @@
+#!/bin/bash
+
+function print_red() {
+	echo -e "\033[0;31m$1\033[0m"
+}
+
+function print_green() {
+	echo -e "\033[0;32m$1\033[0m"
+}
+function deploy() {
+	local type=$1
+	if [ "$type" == "hybrid" ]; then
+		print_green "Deploying hybrid vm to nimbus with host bcaulfield-host-$type"
+		/mts/git/bin/nimbus-esxdeploy --memory 32768 --disk 83886080 --ssd 209715200 --ssd 209715200 --cpus=4 bcaulfield-host-hybrid $DBC_HOME/pxe
+	elif [ "$type" == "flash" ]; then
+		print_green "Deploying all flash vm to nimbus with host bcaulfield-host-$type"
+		/mts/git/bin/nimbus-esxdeploy --memory 32768 --ssd 209715200 --ssd 209715200 --ssd 209715200 --cpus=4 bcaulfield-host-flash $DBC_HOME/pxe
+	else 
+		print_red "Unrecognized type given"
+	fi
+}
+
+function get-dump() {
+   local ip=$1
+   print_green "Getting zdumps from host and placing them in $pwd"
+   scp root@$ip:/var/core/vmkernel-zdump.* .
+}
+
+function vmserial() {
+   local cluster=$1
+   local host=$2
+   local grep_arg=$3
+   print_green "Connecting to $1's vmserial output"
+   NIMBUS=$cluster nimbus-vmserial $host | rg -i $grep_arg
+}
+
+function compile() {
+   local target=$1
+   cd $DBC_HOME/main-18q2
+   if [ "$target" == "all" ]; then
+      iscons esx-all visor-pxe
+   elif [ "$target" == "lsom" ]; then
+      iscons lsom lsomTest
+   else
+      print_red "Unrecognized target"
+   fi
+}
+
+USAGE="\
+deploy <type>      deploys [flash|hybrid] type vm bcaulfield-host-flash to nimbus\n
+get-dump <ip>      gets any vmkernel-zdump.* files from <ip>\n
+vmserial <cluster> <host> <greparg> vmserial for the given host\n
+compile <target>   compiles [all|lsom]\n"
+
+function main() {
+	case $1 in 
+		deploy )
+			$1 ${@:2}
+			;;
+      get-dump )
+			$1 ${@:2}
+         ;;
+      vmserial )
+			$1 ${@:2}
+         ;;
+      compile )
+			$1 ${@:2}
+         ;;
+		help | * )
+			echo -e $USAGE
+			;;
+	esac
+}
+
+main "$@"

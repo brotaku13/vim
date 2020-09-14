@@ -1,23 +1,41 @@
 #!/bin/bash
 
 case $PWD in
+	$lsom | $lsom/*)
+		echo "In LSOM"
+		cd $bora
+		if [ -f "GTAGS" ]; then
+			echo "Updating gtags file"
+			global -uv
+		else
+			echo "Creating new gtags file"
+			find $bora/lib/avltree modules/vmkernel/lsom $bora/modules/vmkernel/tests/vsan/lsom $bora/modules/vmkernel/tests/vsan/wobtree $bora/modules/vmkernel/wobtree $bora/scons/modules/vsanModules.sc $bora/vmkernel/tests/vsan $bora/vmkernel/include -type f | gtags --statistics -f -
+		fi
+	;;
+
 	$splinterdb | $splinterdb/*)
 		echo "in splinterdb"
+		cd $splinterdb
 		if [ -f "GTAGS" ]; then
-			# GTAGS exists so start an update
-			( cd $splinterdb; global -uv)
+			echo "Updating gtags file"
+			global -uv
 		else
-			# else recreate gtags file
-			(cd $splinterdb; gtags --statistics)
+			echo "creating new gtags file"
+			find . -path ./build -prune -o -type f -print | gtags --statistics -f -
 		fi
-
 	;;
 
 	$bora | $bora/*)
 		echo "in bora"
+		cd $bora
+		if [ -f "GTAGS" ]; then
+			echo "Updating gtags file"
+			global -uv
+		else
+			echo "creating new gtags file"
+			find lib/avltree modules/vmkernel/lsom modules/vmkernel/tests/vsan/lsom modules/vmkernel/tests/vsan/wobtree modules/vmkernel/wobtree scons/modules/vsanModules.sc vmkernel/tests/vsan vmkernel/include -type f | gtags --statistics -f -
+		fi
 		#(cd $bora; find lib/avltree modules/vmkernel/lsom/lsom2 modules/vmkernel/tests/vsan/lsom modules/vmkernel/tests/vsan/wobtree modules/vmkernel/wobtree scons/modules/vsanModules.sc vmkernel/tests/vsan vmkernel/include -type f | gtags --statistics -f -)
-		(cd $bora; find . type f | gtags --statistics -f -)
-		
 	;;
 
 	*)
